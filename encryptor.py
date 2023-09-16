@@ -1,6 +1,7 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
+import base64
 import os
 
 
@@ -36,13 +37,19 @@ class encryptor:
         return iv + ciphertext
 
     def schedule(self, full_path:str) -> None:
-        dir_path = os.path.dirname(full_path)
         name = os.path.basename(full_path)
-        new_name = name.encode('utf8').hex()[:250] + '.cr'
+        dir_path = os.path.dirname(full_path)
+        new_name = base64.b85encode(name.encode('utf8')).decode('utf8')
         new_full_path = dir_path + '/' + new_name
-        
-        self.count += 1
-        print(" + [{}]\tEncrypting '{}'".format(self.count, name))
+
+        # If is a valid base85
+        try:
+            base64.b85decode(name)
+            print(" + '{}'\t-\t already encrypted.".format(name[:35] + '...' if 35 < len(name) else name))
+            return None
+        except Exception as e:
+            self.count += 1
+            print(" + [{}]\tEncrypting '{}'".format(self.count, name))
 
         # Rename
         os.rename(full_path, new_full_path)
@@ -69,7 +76,7 @@ if __name__ == "__main__":
        repeat = input(' > Repeat the key\t: ').encode('utf8')
 
        if key == repeat:
-           path = input(' > Enter files directory:\t')
+           path = input(' > Enter files directory: ')
 
            # Start encryption
            print('')

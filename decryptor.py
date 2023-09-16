@@ -1,6 +1,6 @@
 from Crypto.Cipher import AES
 import hashlib
-import string
+import base64
 import os
 
 class decryptor:
@@ -34,16 +34,18 @@ class decryptor:
     def schedule(self, full_path):
         name = os.path.basename(full_path)
         dir_path = os.path.dirname(full_path)
-
-        if all(c not in string.hexdigits for c in name) or not name.endswith('.cr'):
+        new_name = base64.b85decode(name.encode('utf8'))
+        
+        # If it is a valid base85 | the given name is the same as encrypted string
+        if name == base64.b85encode(new_name).decode('utf8'):
+            new_name = new_name.decode('utf8')
+            new_full_path = dir_path + '/' + new_name
+        else:
             print(' --> The file is not an encrypted one.')
             return None
-
-        new_name = bytes.fromhex(name[:-len('.cr')]).decode('utf8')
-        new_full_path = dir_path + '/' + new_name
         
         self.count += 1
-        print(" + [{}]\tDecrypting '{}'".format(self.count, name))
+        print(" + [{}]\tDecrypting '{}'".format(self.count, name[:35] + '...' if 35 < len(name) else name))
 
         # Rename
         os.rename(full_path, new_full_path)
@@ -59,7 +61,7 @@ class decryptor:
             with open(new_full_path, 'wb') as f: f.write(content)
 
 if __name__ == "__main__":
-   key = input(' > Enter a secret key:\t').encode('utf8')
+   key = input('\n > Enter a secret key:\t').encode('utf8')
    path = input(' > Enter files directory: ')
    print('')
    decryptor = decryptor(key, path)
