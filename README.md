@@ -9,3 +9,9 @@ And simple run the following to decrypt them.
 ```python
 python decryptor.py
 ```
+
+# Packages
+
+```shell
+pip install pycryptodome
+```
