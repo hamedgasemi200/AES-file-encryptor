@@ -10,6 +10,8 @@ And simple run the following to decrypt them.
 python decryptor.py
 ```
 
+> Note: only 250 bytes of file names will be kept.
+
 # Packages
 
 ```shell
