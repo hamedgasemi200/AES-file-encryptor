@@ -1,6 +1,7 @@
 from Crypto.Cipher import AES
 import hashlib
 import base64
+import sys
 import os
 
 class decryptor:
@@ -61,8 +62,15 @@ class decryptor:
             with open(new_full_path, 'wb') as f: f.write(content)
 
 if __name__ == "__main__":
-   key = input('\n > Enter a secret key:\t').encode('utf8')
-   path = input(' > Enter files directory: ')
-   print('')
-   decryptor = decryptor(key, path)
-   print('\n > Decrypted {} files.\n'.format(decryptor.count))
+    # Get dir path
+    try:
+       path = sys.argv[1]
+       print('')
+    except IndexError:
+       path = input('\n > Enter files directory: ')
+    
+    # Get secret
+    key = input(' > Enter a secret key:\t').encode('utf8')
+    print('')
+    decryptor = decryptor(key, path)
+    print('\n > Decrypted {} files.\n'.format(decryptor.count))

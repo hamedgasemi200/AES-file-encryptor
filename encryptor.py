@@ -2,6 +2,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
 import base64
+import sys
 import os
 
 
@@ -71,13 +72,19 @@ class encryptor:
                 f.write(ciphertext)
 
 if __name__ == "__main__":
-   while True:
-       key = input('\n > Enter a secret key: ').encode('utf8')
+    # Get dir path
+    try:
+       path = sys.argv[1]
+       print('')
+    except IndexError:
+       path = input('\n > Enter files directory: ')
+    
+    # Get secret
+    while True:
+       key = input(' > Enter a secret key: ').encode('utf8')
        repeat = input(' > Repeat the key\t: ').encode('utf8')
 
        if key == repeat:
-           path = input(' > Enter files directory: ')
-
            # Start encryption
            print('')
            encryptor = encryptor(key, path)
