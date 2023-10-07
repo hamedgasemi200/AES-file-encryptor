@@ -12,7 +12,7 @@ python decryptor.py [DIR_PATH]
 
 > Note: only 250 bytes of file names will be kept.
 
-# Packages
+# Required Packages
 
 ```shell
 pip install pycryptodome
