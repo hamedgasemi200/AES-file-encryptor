@@ -1,6 +1,7 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
+import getpass
 import base64
 import sys
 import os
@@ -81,8 +82,8 @@ if __name__ == "__main__":
     
     # Get secret
     while True:
-       key = input(' > Enter a secret key: ').encode('utf8')
-       repeat = input(' > Repeat the key\t: ').encode('utf8')
+       key = getpass.getpass(' > Enter a secret key: ').encode('utf8')
+       repeat = getpass.getpass(' > Repeat the key\t: ').encode('utf8')
 
        if key == repeat:
            # Start encryption

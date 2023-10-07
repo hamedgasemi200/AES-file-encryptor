@@ -1,8 +1,10 @@
 from Crypto.Cipher import AES
 import hashlib
+import getpass
 import base64
 import sys
 import os
+
 
 class decryptor:
     def __init__(self, key:bytearray, path:str) -> None:
@@ -70,7 +72,7 @@ if __name__ == "__main__":
        path = input('\n > Enter files directory: ')
     
     # Get secret
-    key = input(' > Enter a secret key:\t').encode('utf8')
+    key = getpass.getpass(' > Enter the secret key:\t').encode('utf8')
     print('')
     decryptor = decryptor(key, path)
     print('\n > Decrypted {} files.\n'.format(decryptor.count))
