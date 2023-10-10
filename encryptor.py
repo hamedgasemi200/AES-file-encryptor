@@ -16,16 +16,23 @@ class encryptor:
         self.count = 0
 
         # Backup directory
+        print('\n Making a backup...')
         shutil.copytree(path, "{}-backup".format(path))
+        print(' ✓ Made a backup.\n')
 
-        # Schedule directories
-        for file in os.listdir(path):
-            self.schedule(path + '/' + file)
-        
-        # Remove backup after finishing
-        shutil.rmtree(path)
-
-
+        try:
+            # Schedule directories
+            print(' Start encrypting files\n')
+            for file in os.listdir(path):
+                self.schedule(path + '/' + file)
+            print('\n ✓ Encrypted {} files'.format(self.count))
+        except:
+            print(' x Something went wrong.')
+        else:
+            # Remove the backup after finishing
+            print('\n Removing the backup...')
+            shutil.rmtree("{}-backup".format(path))
+            print(' ✓ Removed the backup.')
 
     def pad(self, s:bytearray) -> bytearray:
         # Padding is a way to take data that may or may not be a multiple of the block size
@@ -88,18 +95,21 @@ if __name__ == "__main__":
        path = sys.argv[1]
        print('')
     except IndexError:
-       path = input('\n > Enter files directory: ')
+       while True:
+           path = input('\n > Enter files directory: ')
+
+           if os.path.isdir(path):
+               break
+           else:
+               print(' \n Directory does not exist.')
     
     # Get secret
     while True:
-       key = getpass.getpass(' > Enter a secret key: ').encode('utf8')
+       key = getpass.getpass(' > Enter a secret key\t: ').encode('utf8')
        repeat = getpass.getpass(' > Repeat the key\t: ').encode('utf8')
 
        if key == repeat:
-           # Start encryption
-           print('')
            encryptor = encryptor(key, path)
-           print('\n # Eecrypted {} files.\n'.format(encryptor.count))
            break
        else:
-           print('\n Keys did not match. Try again.')
+           print('\n Keys did not match. Try again.\n')
