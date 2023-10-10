@@ -9,11 +9,11 @@ import os
 
 
 class encryptor:
-    def __init__(self, key:bytearray, path:str) -> None:
+    def __init__(self, password:bytearray, path:str) -> None:
         self.block_size = AES.block_size
-        self.key = hashlib.sha256(key).digest()
-        self.path = path
         self.count = 0
+        self.key = hashlib.sha256(password).digest()
+        self.path = path
 
         # Backup directory
         print('\n Making a backup...')
@@ -21,9 +21,9 @@ class encryptor:
         print(' ✓ Made a backup.\n')
 
         try:
-            # Schedule directories
-            print(' Start encrypting files\n')
+            # Iterate thought files and directories in the path.
             for file in os.listdir(path):
+                # Schedule files/directories to encrypt
                 self.schedule(path + '/' + file)
             print('\n ✓ Encrypted {} files'.format(self.count))
         except:
@@ -32,7 +32,10 @@ class encryptor:
             # Remove the backup after finishing
             print('\n Removing the backup...')
             shutil.rmtree("{}-backup".format(path))
-            print(' ✓ Removed the backup.')
+            print(' ✓ Removed the backup.\n')
+
+            # Rename Directory
+            os.rename(path, "{}.enc".format(path))
 
     def pad(self, s:bytearray) -> bytearray:
         # Padding is a way to take data that may or may not be a multiple of the block size
@@ -41,7 +44,7 @@ class encryptor:
         return s + gt.encode('utf8')
     
     # Encrypt function
-    def encrypt(self, raw:bytearray) -> bytearray:
+    def encrypt_content(self, raw:bytearray) -> bytearray:
         # Generate an initial vector
         iv = Random.new().read(self.block_size)
         
@@ -54,6 +57,16 @@ class encryptor:
         
         # return
         return iv + ciphertext
+    
+    def encrypt_file(self, full_path:str) -> None:
+        # Open file for reading as binary
+        with open(full_path, 'rb') as f:
+            # Encrypt
+            ciphertext = self.encrypt_content(f.read())
+
+        # Open file for writing as binary
+        with open(full_path, 'wb') as f:
+            f.write(ciphertext)
 
     def schedule(self, full_path:str) -> None:
         name = os.path.basename(full_path)
@@ -61,33 +74,18 @@ class encryptor:
         new_name = base64.b85encode(name.encode('utf8')).decode('utf8')
         new_full_path = dir_path + '/' + new_name
 
-        # If is a valid base85
-        try:
-            base64.b85decode(name)
-            print(" + '{}'\t-\t already encrypted.".format(name[:35] + '...' if 35 < len(name) else name))
-            return None
-        except Exception as e:
-            self.count += 1
-            print(" + [{}]\tEncrypting '{}'".format(self.count, name))
-
-        # Rename
+        # Rename the file/directory
         os.rename(full_path, new_full_path)
 
-        # If was a directory
+        # If the file is a directory
         if os.path.isdir(new_full_path):
             # Iterate through files
             for subName in os.listdir(new_full_path):
                 self.schedule(new_full_path + '/' + subName)
         else:
-            pass
-            # Open file for reading as binary
-            with open(new_full_path, 'rb') as f:
-                # Encrypt
-                ciphertext = self.encrypt(f.read())
-            
-            # Open file for writing as binary
-            with open(new_full_path, 'wb') as f:
-                f.write(ciphertext)
+            print(" + [{}]\tEncrypting '{}'".format(self.count, name))
+            self.encrypt_file(new_full_path)
+            self.count += 1
 
 if __name__ == "__main__":
     # Get dir path

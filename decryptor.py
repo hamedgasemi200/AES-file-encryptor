@@ -13,14 +13,21 @@ class decryptor:
         self.path = path
         self.count = 0
         
-        for file in os.listdir(path):
-            self.schedule(path + '/' + file)
+        if path.endswith('.enc'):
+            # Iterate through files/directories
+            for file in os.listdir(path):
+                self.schedule(path + '/' + file)
+            
+            # Rename Directory
+            os.rename(path, path[:-4])
+        else:
+            print(' The directory is not an encryption folder')
     
     def unpad(self, s:bytearray):
         return s[:-ord(s[len(s)-1:])]
 
     # Encrypt function
-    def decrypt(self, ciphertext:bytearray) -> bytearray:
+    def decrypt_content(self, ciphertext:bytearray) -> bytearray:
         # Get the initial vector
         iv = ciphertext[:self.block_size]
 
@@ -33,35 +40,34 @@ class decryptor:
 
         # return
         return text
+    
+    def decrypt_file(self, full_path):
+        # Decrypt file content
+        with open(full_path, 'rb') as f:
+            content = self.decrypt_content(f.read())
+        
+        # Overwrite binary with decrypted content
+        with open(full_path, 'wb') as f:
+            f.write(content)
 
     def schedule(self, full_path):
         name = os.path.basename(full_path)
         dir_path = os.path.dirname(full_path)
-        new_name = base64.b85decode(name.encode('utf8'))
-        
-        # If it is a valid base85 | the given name is the same as encrypted string
-        if name == base64.b85encode(new_name).decode('utf8'):
-            new_name = new_name.decode('utf8')
-            new_full_path = dir_path + '/' + new_name
-        else:
-            print(' --> The file is not an encrypted one.')
-            return None
-        
-        self.count += 1
-        print(" + [{}]\tDecrypting '{}'".format(self.count, name[:35] + '...' if 35 < len(name) else name))
+        new_name = base64.b85decode(name.encode('utf8')).decode('utf8')
+        new_full_path = dir_path + '/' + new_name
 
         # Rename
         os.rename(full_path, new_full_path)
         
         # If was a directory
         if os.path.isdir(new_full_path):
-            # Iterate through files
+            # Iterate through files/directories
             for subName in os.listdir(new_full_path):
                 self.schedule(new_full_path + '/' + subName)
         else:
-            # Overwrite binary with decrypted content
-            with open(new_full_path, 'rb') as f: content = self.decrypt(f.read())
-            with open(new_full_path, 'wb') as f: f.write(content)
+            print(" + [{}]\tDecrypting '{}'".format(self.count, name[:35] + '...' if 35 < len(name) else name))
+            self.decrypt_file(new_full_path)
+            self.count += 1
 
 if __name__ == "__main__":
     # Get dir path
