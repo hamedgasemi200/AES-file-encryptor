@@ -3,6 +3,7 @@ from Crypto import Random
 import hashlib
 import getpass
 import base64
+import shutil
 import sys
 import os
 
@@ -13,9 +14,18 @@ class encryptor:
         self.key = hashlib.sha256(key).digest()
         self.path = path
         self.count = 0
-        
+
+        # Backup directory
+        shutil.copytree(path, "{}-backup".format(path))
+
+        # Schedule directories
         for file in os.listdir(path):
             self.schedule(path + '/' + file)
+        
+        # Remove backup after finishing
+        shutil.rmtree(path)
+
+
 
     def pad(self, s:bytearray) -> bytearray:
         # Padding is a way to take data that may or may not be a multiple of the block size
