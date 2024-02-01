@@ -14,10 +14,12 @@ class encryptor:
         self.count = 0
         self.key = hashlib.sha256(password).digest()
         self.path = path
+        self.backup_path = "{}-backup".format(path)
 
         # Backup directory
         print('\n Making a backup...')
-        shutil.copytree(path, "{}-backup".format(path))
+        if os.path.exists(self.backup_path): shutil.rmtree(self.backup_path)
+        shutil.copytree(path, self.backup_path)
         print(' ✓ Made a backup.\n')
 
         try:
@@ -43,6 +45,10 @@ class encryptor:
         gt = (self.block_size - len(s) % self.block_size) * chr(self.block_size - len(s) % self.block_size)
         return s + gt.encode('utf8')
     
+    def encrypt_name(self, name:str) -> str:
+        # Return new name
+        return base64.b85encode(name.encode('utf8')).decode('utf8')
+
     # Encrypt function
     def encrypt_content(self, raw:bytearray) -> bytearray:
         # Generate an initial vector
@@ -71,21 +77,20 @@ class encryptor:
     def schedule(self, full_path:str) -> None:
         name = os.path.basename(full_path)
         dir_path = os.path.dirname(full_path)
-        new_name = base64.b85encode(name.encode('utf8')).decode('utf8')
-        new_full_path = dir_path + '/' + new_name
-
-        # Rename the file/directory
-        os.rename(full_path, new_full_path)
+        new_name = self.encrypt_name(name)
 
         # If the file is a directory
-        if os.path.isdir(new_full_path):
+        if os.path.isdir(full_path):
             # Iterate through files
-            for subName in os.listdir(new_full_path):
-                self.schedule(new_full_path + '/' + subName)
+            for subName in os.listdir(full_path):
+                self.schedule(full_path + '/' + subName)
         else:
-            print(" + [{}]\tEncrypting '{}'".format(self.count, name))
-            self.encrypt_file(new_full_path)
+            print(" + [{}]\t Encrypting '{}'".format(self.count, new_name))
+            # self.encrypt_file(full_path)
             self.count += 1
+        
+        # Rename the file/directory
+        os.rename(full_path, "{}/{}".format(dir_path, new_name))
 
 if __name__ == "__main__":
     # Get dir path
