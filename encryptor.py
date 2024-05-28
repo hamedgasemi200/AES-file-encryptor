@@ -33,7 +33,7 @@ class encryptor:
         else:
             # Remove the backup after finishing
             print('\n Removing the backup...')
-            shutil.rmtree("{}-backup".format(path))
+            # shutil.rmtree("{}-backup".format(path))
             print(' ✓ Removed the backup.\n')
 
             # Rename Directory
@@ -86,7 +86,7 @@ class encryptor:
                 self.schedule(full_path + '/' + subName)
         else:
             print(" + [{}]\t Encrypting '{}'".format(self.count, new_name))
-            # self.encrypt_file(full_path)
+            self.encrypt_file(full_path)
             self.count += 1
         
         # Rename the file/directory
