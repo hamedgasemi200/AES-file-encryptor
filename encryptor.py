@@ -33,7 +33,7 @@ class encryptor:
         else:
             # Remove the backup after finishing
             print('\n Removing the backup...')
-            # shutil.rmtree("{}-backup".format(path))
+            shutil.rmtree("{}-backup".format(path))
             print(' ✓ Removed the backup.\n')
 
             # Rename Directory
